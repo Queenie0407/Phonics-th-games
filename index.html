@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#7241a6">
+  <meta name="description" content="用可愛刺蝟練習 voiced TH 與 unvoiced TH 的英語學習遊戲。">
+  <title>TH Hedgehog Hunt</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="app" class="app-shell">
+    <section id="start-screen" class="screen start-screen is-active" aria-labelledby="game-title">
+      <div class="start-card clay-panel">
+        <div class="title-kicker">English Sound Adventure</div>
+        <h1 id="game-title"><span>TH</span> Hedgehog Hunt</h1>
+        <p class="start-subtitle">聽一聽、找一找，分辨 <strong>/ð/</strong> 和 <strong>/θ/</strong>！</p>
+        <div class="mascot-stage">
+          <span class="felt-blob blob-one" aria-hidden="true"></span>
+          <img src="assets/hedgehog-normal.png" alt="開心的黏土刺蝟吉祥物">
+          <span class="sound-chip voiced">VOICED <b>/ð/</b></span>
+          <span class="sound-chip unvoiced">UNVOICED <b>/θ/</b></span>
+        </div>
+        <button id="start-button" class="primary-button">開始冒險 <span aria-hidden="true">▶</span></button>
+        <button id="reset-button" class="text-button">重設關卡進度</button>
+      </div>
+    </section>
+
+    <section id="map-screen" class="screen map-screen" aria-labelledby="map-title">
+      <header class="map-header">
+        <div>
+          <p class="eyebrow">FOREST SOUND TRAIL</p>
+          <h2 id="map-title">TH 聲音森林</h2>
+        </div>
+        <button id="home-button" class="round-button" aria-label="回到首頁">⌂</button>
+      </header>
+
+      <div class="map-stage">
+        <img class="map-art" src="assets/map-background.png" alt="三個關卡組成的黏土森林地圖">
+        <button class="level-node node-1" data-level="1" aria-label="第一關 3乘3 洞口">
+          <span class="node-number">1</span><span class="node-label">3×3</span><span class="node-stars"></span>
+        </button>
+        <button class="level-node node-2" data-level="2" aria-label="第二關 4乘4 洞口">
+          <span class="node-number">2</span><span class="node-label">4×4</span><span class="node-stars"></span>
+        </button>
+        <button class="level-node node-3" data-level="3" aria-label="第三關 5乘5 洞口">
+          <span class="node-number">3</span><span class="node-label">5×5</span><span class="node-stars"></span>
+        </button>
+
+        <button id="teacher-button" class="teacher-button" aria-label="再看一次玩法說明">
+          <img src="assets/teacher-npc.png" alt="刺蝟英語老師">
+          <span>玩法說明</span>
+        </button>
+      </div>
+    </section>
+
+    <section id="game-screen" class="screen game-screen" aria-labelledby="level-title">
+      <img class="level-art" src="assets/level-background.png" alt="黏土森林草地關卡背景">
+      <header class="game-hud" aria-label="遊戲狀態">
+        <button id="map-button" class="hud-button" aria-label="退出並回到地圖">‹ 地圖</button>
+        <div id="hearts" class="hearts" aria-label="剩餘五滴血"></div>
+        <div class="timer-chip"><span aria-hidden="true">⏱</span><b id="timer">80</b></div>
+        <div class="score-chip"><span aria-hidden="true">★</span><b id="score">0/10</b></div>
+        <button id="pause-button" class="hud-icon" aria-label="暫停遊戲">Ⅱ</button>
+        <button id="mute-button" class="hud-icon" aria-label="關閉聲音">🔊</button>
+      </header>
+
+      <div class="prompt-bar clay-panel">
+        <div>
+          <span id="level-title" class="level-title">第 1 關</span>
+          <span class="prompt-copy">找出</span>
+          <strong id="target-badge" class="target-badge unvoiced">UNVOICED /θ/</strong>
+        </div>
+        <button id="speak-button" class="speak-button" aria-label="播放提示聲音">🔊 聽提示</button>
+      </div>
+
+      <div id="hole-grid" class="hole-grid" role="group" aria-label="刺蝟洞口"></div>
+      <div id="feedback" class="feedback" aria-live="polite"></div>
+      <img id="hammer-cursor" class="hammer-cursor" src="assets/toy-hammer.png" alt="">
+    </section>
+
+    <button id="music-button" class="music-toggle" aria-label="關閉背景音樂" aria-pressed="false">
+      <span aria-hidden="true">🎵</span><b>背景音樂</b>
+    </button>
+  </main>
+
+  <div id="tutorial-modal" class="modal" aria-hidden="true">
+    <div class="modal-card tutorial-card clay-panel" role="dialog" aria-modal="true" aria-labelledby="tutorial-title">
+      <img class="tutorial-teacher" src="assets/teacher-npc.png" alt="刺蝟英語老師">
+      <div class="tutorial-content">
+        <p class="eyebrow">PROFESSOR PRICKLES SAYS</p>
+        <h2 id="tutorial-title">歡迎來到 TH 聲音森林！</h2>
+        <div id="tutorial-copy"></div>
+        <div class="tutorial-progress" aria-label="教學進度">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="modal-actions">
+          <button id="tutorial-skip" class="secondary-button">稍後再看</button>
+          <button id="tutorial-next" class="primary-button">下一步</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="result-modal" class="modal" aria-hidden="true">
+    <div class="modal-card result-card clay-panel" role="dialog" aria-modal="true" aria-labelledby="result-title">
+      <img id="result-mascot" src="assets/hedgehog-normal.png" alt="刺蝟結果表情">
+      <p id="result-kicker" class="eyebrow">LEVEL COMPLETE</p>
+      <h2 id="result-title">太棒了！</h2>
+      <p id="result-copy"></p>
+      <div id="result-stars" class="result-stars" aria-label="關卡星級"></div>
+      <div class="modal-actions centered">
+        <button id="retry-button" class="secondary-button">再玩一次</button>
+        <button id="result-map-button" class="primary-button">回到地圖</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="pause-modal" class="modal" aria-hidden="true">
+    <div class="modal-card pause-card clay-panel" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+      <div class="pause-symbol">Ⅱ</div>
+      <h2 id="pause-title">休息一下</h2>
+      <p>計時與刺蝟都已暫停。</p>
+      <button id="resume-button" class="primary-button">繼續遊戲</button>
+    </div>
+  </div>
+
+  <div class="rotate-notice" aria-hidden="true">
+    <div>↻</div>
+    <strong>請將 iPad 轉成橫向</strong>
+    <span>橫向畫面會更容易看清楚每一隻刺蝟。</span>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
