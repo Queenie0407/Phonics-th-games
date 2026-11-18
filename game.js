@@ -1,9 +1,9 @@
 "use strict";
 
 const LEVELS = {
-  1: { grid: 3, count: [1, 2], visible: 5500, time: 80, target: "unvoiced", label: "第一關 · UNVOICED /θ/ · 3×3" },
-  2: { grid: 4, count: [2, 4], visible: 5000, time: 85, target: "voiced", label: "第二關 · VOICED /ð/ · 4×4" },
-  3: { grid: 5, count: [3, 5], visible: 4500, time: 90, target: "mixed", label: "第三關 · MIXED TH · 5×5" }
+  1: { grid: 3, count: [1, 2], visible: 7000, time: 90, target: "unvoiced", label: "第一關 · UNVOICED /θ/ · 3×3" },
+  2: { grid: 4, count: [2, 4], visible: 6500, time: 95, target: "voiced", label: "第二關 · VOICED /ð/ · 4×4" },
+  3: { grid: 5, count: [3, 5], visible: 6000, time: 100, target: "mixed", label: "第三關 · MIXED TH · 5×5" }
 };
 
 const WORDS = [
@@ -60,6 +60,7 @@ const state = {
   roundTimer: null,
   roundDeadline: 0,
   roundExtended: false,
+  lastPointerAction: 0,
   clockTimer: null,
   feedbackTimer: null,
   tutorialStep: 0
@@ -214,6 +215,8 @@ function buildGrid() {
   const grid = $("#hole-grid");
   grid.style.setProperty("--grid", config.grid);
   grid.innerHTML = "";
+  grid.onpointerdown = handleGridAction;
+  grid.onclick = handleGridAction;
   for (let i = 0; i < config.grid ** 2; i += 1) {
     const hole = document.createElement("div");
     hole.className = "hole";
@@ -221,16 +224,6 @@ function buildGrid() {
     hole.tabIndex = 0;
     hole.setAttribute("aria-label", `第 ${i + 1} 個洞口，沒有刺蝟`);
     hole.innerHTML = `<span class="hedgehog-wrap"><img class="hedgehog-img" src="assets/hedgehog-normal.png" alt=""><span class="word-card"></span><span class="word-audio" role="button" tabindex="-1" aria-label="聆聽單字">🔊</span><span class="impact-burst">★ ✦</span></span>`;
-    hole.addEventListener("pointerdown", event => {
-      if (!hole.classList.contains("active")) return;
-      event.preventDefault();
-      if (event.target.closest(".word-audio")) {
-        event.stopPropagation();
-        listenToWord(hole);
-        return;
-      }
-      hitHole(hole, event);
-    });
     hole.addEventListener("keydown", event => {
       if (event.key !== "Enter" && event.key !== " ") return;
       event.preventDefault();
@@ -243,6 +236,36 @@ function buildGrid() {
     grid.appendChild(hole);
   }
   $("#level-title").textContent = config.label;
+}
+
+function activeHoleAtPoint(event) {
+  const direct = event.target.closest?.(".hole.active");
+  if (direct) return direct;
+  const candidates = $$(".hole.active").filter(hole => {
+    const rect = hole.querySelector(".hedgehog-wrap").getBoundingClientRect();
+    const padding = 14;
+    return event.clientX >= rect.left - padding && event.clientX <= rect.right + padding
+      && event.clientY >= rect.top - padding && event.clientY <= rect.bottom + padding;
+  });
+  if (!candidates.length) return null;
+  return candidates.sort((a, b) => {
+    const ar = a.querySelector(".hedgehog-wrap").getBoundingClientRect();
+    const br = b.querySelector(".hedgehog-wrap").getBoundingClientRect();
+    const ad = Math.hypot(event.clientX - (ar.left + ar.width / 2), event.clientY - (ar.top + ar.height / 2));
+    const bd = Math.hypot(event.clientX - (br.left + br.width / 2), event.clientY - (br.top + br.height / 2));
+    return ad - bd;
+  })[0];
+}
+
+function handleGridAction(event) {
+  if (event.type === "click" && performance.now() - state.lastPointerAction < 550) return;
+  const listenButton = event.target.closest?.(".word-audio");
+  const hole = listenButton?.closest(".hole.active") || activeHoleAtPoint(event);
+  if (!hole) return;
+  if (event.cancelable) event.preventDefault();
+  if (event.type === "pointerdown") state.lastPointerAction = performance.now();
+  if (listenButton) listenToWord(hole);
+  else hitHole(hole, event);
 }
 
 function sample(array) { return array[Math.floor(Math.random() * array.length)]; }
@@ -391,7 +414,7 @@ function hitHole(hole, event) {
     }
   }
   updateHud();
-  nextRound(correct ? 650 : 820);
+  state.roundTimer = setTimeout(() => nextRound(180), correct ? 460 : 620);
 }
 
 function showFeedback(message, good) {
