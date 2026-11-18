@@ -222,8 +222,9 @@ function buildGrid() {
     hole.setAttribute("aria-label", `第 ${i + 1} 個洞口，沒有刺蝟`);
     hole.innerHTML = `<span class="hedgehog-wrap"><img class="hedgehog-img" src="assets/hedgehog-normal.png" alt=""><span class="word-card"></span><span class="word-audio" role="button" tabindex="-1" aria-label="聆聽單字">🔊</span><span class="impact-burst">★ ✦</span></span>`;
     hole.addEventListener("pointerdown", event => {
+      if (!hole.classList.contains("active")) return;
+      event.preventDefault();
       if (event.target.closest(".word-audio")) {
-        event.preventDefault();
         event.stopPropagation();
         listenToWord(hole);
         return;
