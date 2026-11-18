@@ -1,9 +1,9 @@
 "use strict";
 
 const LEVELS = {
-  1: { grid: 3, count: [1, 2], visible: 5000, target: "unvoiced", label: "第一關 · UNVOICED /θ/ · 3×3" },
-  2: { grid: 4, count: [2, 4], visible: 4500, target: "voiced", label: "第二關 · VOICED /ð/ · 4×4" },
-  3: { grid: 5, count: [3, 6], visible: 4000, target: "mixed", label: "第三關 · MIXED TH · 5×5" }
+  1: { grid: 3, count: [1, 2], visible: 5500, time: 80, target: "unvoiced", label: "第一關 · UNVOICED /θ/ · 3×3" },
+  2: { grid: 4, count: [2, 4], visible: 5000, time: 85, target: "voiced", label: "第二關 · VOICED /ð/ · 4×4" },
+  3: { grid: 5, count: [3, 5], visible: 4500, time: 90, target: "mixed", label: "第三關 · MIXED TH · 5×5" }
 };
 
 const WORDS = [
@@ -37,7 +37,7 @@ const TUTORIAL = [
   `<p>說 <strong>this</strong> 時，把手放在喉嚨上，會感覺到振動，這就是 <strong>voiced /ð/</strong>。</p>
    <p>說 <strong>think</strong> 時，舌尖輕放在牙齒間，讓氣流通過，但喉嚨不振動，這就是 <strong>unvoiced /θ/</strong>。</p>`,
   `<p>第一關只練習找 <strong>unvoiced /θ/</strong>，第二關只練習找 <strong>voiced /ð/</strong>，第三關才會把兩種聲音混合。</p>
-   <p>敲下拿著正確單字牌的刺蝟。答對一題得一分；答錯會少一顆愛心。<strong>80 秒內答對 10 題就過關！</strong></p>`
+   <p>敲下拿著正確單字牌的刺蝟。答對一題得一分；答錯會少一顆愛心。按單字旁的喇叭可聽發音，該輪第一次聆聽會增加 3 秒。<strong>時間內答對 10 題就過關！</strong></p>`
 ];
 
 const $ = selector => document.querySelector(selector);
@@ -58,6 +58,8 @@ const state = {
   musicMuted: localStorage.getItem("th-hunt-music-muted") === "yes",
   roundLocked: false,
   roundTimer: null,
+  roundDeadline: 0,
+  roundExtended: false,
   clockTimer: null,
   feedbackTimer: null,
   tutorialStep: 0
@@ -74,8 +76,17 @@ const audio = {
   wrong: new Audio("sound/wrong.mp3"),
   startled: new Audio("sound/hedgehog-startled.mp3"),
   levelUp: new Audio("sound/level-up.mp3"),
-  cheer: new Audio("sound/cheer.mp3")
+  cheer: new Audio("sound/cheer.mp3"),
+  promptVoiced: new Audio("sound/prompts/voiced.mp3"),
+  promptUnvoiced: new Audio("sound/prompts/unvoiced.mp3")
 };
+
+const wordAudio = new Map(WORDS.map(item => {
+  const clip = new Audio(`sound/words/${item.word}.mp3`);
+  clip.preload = "auto";
+  clip.volume = .9;
+  return [item.word, clip];
+}));
 
 audio.music.loop = true;
 audio.music.volume = .12;
@@ -89,6 +100,19 @@ audio.wrong.volume = .38;
 audio.startled.volume = .3;
 audio.levelUp.volume = .5;
 audio.cheer.volume = .35;
+audio.promptVoiced.volume = .9;
+audio.promptUnvoiced.volume = .9;
+
+function playTeachingClip(clip) {
+  if (state.muted || !clip) return;
+  clip.pause();
+  clip.currentTime = 0;
+  const normalVolume = state.paused ? .04 : .12;
+  if (!state.musicMuted) audio.music.volume = .035;
+  const restoreMusic = () => { if (!state.musicMuted) audio.music.volume = normalVolume; };
+  clip.addEventListener("ended", restoreMusic, { once: true });
+  clip.play().catch(restoreMusic);
+}
 
 function ensureMusic() {
   if (state.musicMuted) return;
@@ -161,10 +185,11 @@ function finishTutorial(startLevel = false) {
 }
 
 function startLevelGame(level) {
+  const config = LEVELS[level];
   state.level = level;
   state.lives = 5;
   state.score = 0;
-  state.time = 80;
+  state.time = config.time;
   state.running = true;
   state.paused = false;
   state.roundLocked = false;
@@ -190,12 +215,30 @@ function buildGrid() {
   grid.style.setProperty("--grid", config.grid);
   grid.innerHTML = "";
   for (let i = 0; i < config.grid ** 2; i += 1) {
-    const hole = document.createElement("button");
+    const hole = document.createElement("div");
     hole.className = "hole";
-    hole.type = "button";
+    hole.setAttribute("role", "button");
+    hole.tabIndex = 0;
     hole.setAttribute("aria-label", `第 ${i + 1} 個洞口，沒有刺蝟`);
-    hole.innerHTML = `<span class="hedgehog-wrap"><img class="hedgehog-img" src="assets/hedgehog-normal.png" alt=""><span class="word-card"></span><span class="impact-burst">★ ✦</span></span>`;
-    hole.addEventListener("pointerdown", event => hitHole(hole, event));
+    hole.innerHTML = `<span class="hedgehog-wrap"><img class="hedgehog-img" src="assets/hedgehog-normal.png" alt=""><span class="word-card"></span><span class="word-audio" role="button" tabindex="-1" aria-label="聆聽單字">🔊</span><span class="impact-burst">★ ✦</span></span>`;
+    hole.addEventListener("pointerdown", event => {
+      if (event.target.closest(".word-audio")) {
+        event.preventDefault();
+        event.stopPropagation();
+        listenToWord(hole);
+        return;
+      }
+      hitHole(hole, event);
+    });
+    hole.addEventListener("keydown", event => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      if (event.target.closest(".word-audio")) listenToWord(hole);
+      else if (event.target === hole) {
+        const rect = hole.getBoundingClientRect();
+        hitHole(hole, { clientX: rect.left + rect.width / 2, clientY: rect.top + rect.height / 2 });
+      }
+    });
     grid.appendChild(hole);
   }
   $("#level-title").textContent = config.label;
@@ -230,6 +273,9 @@ function retireAll() {
     hole.dataset.word = "";
     hole.dataset.type = "";
     hole.setAttribute("aria-label", "空洞口");
+    const listen = hole.querySelector(".word-audio");
+    listen.tabIndex = -1;
+    listen.classList.remove("extended");
     setTimeout(() => hole.classList.remove("retreating"), 260);
   });
   if (hadActiveHedgehogs && state.running) playSfx("retreat");
@@ -256,11 +302,18 @@ function spawnRound() {
   holes.forEach((hole, index) => activateHole(hole, entries[index]));
   playSfx("pop");
   updateTarget();
+  state.roundExtended = false;
   state.roundLocked = false;
+  scheduleRoundExpiry(config.visible);
+}
+
+function scheduleRoundExpiry(delay) {
+  clearTimeout(state.roundTimer);
+  state.roundDeadline = performance.now() + delay;
   state.roundTimer = setTimeout(() => {
     if (state.running && !state.paused && !state.roundLocked) nextRound(180);
     else if (state.running && state.paused) nextRound(250);
-  }, config.visible);
+  }, delay);
 }
 
 function activateHole(hole, entry) {
@@ -268,8 +321,27 @@ function activateHole(hole, entry) {
   hole.dataset.type = entry.type;
   hole.querySelector(".word-card").textContent = entry.word;
   hole.querySelector(".hedgehog-img").src = "assets/hedgehog-normal.png";
+  const listen = hole.querySelector(".word-audio");
+  listen.tabIndex = 0;
+  listen.setAttribute("aria-label", `Hear ${entry.word}｜聆聽 ${entry.word}`);
   hole.setAttribute("aria-label", `${entry.word}，點擊選擇`);
   requestAnimationFrame(() => hole.classList.add("active"));
+}
+
+function listenToWord(hole) {
+  const word = hole.dataset.word;
+  if (!word || !state.running || state.paused || state.roundLocked || !hole.classList.contains("active")) return;
+  playTeachingClip(wordAudio.get(word));
+  const listen = hole.querySelector(".word-audio");
+  listen.classList.remove("extended");
+  void listen.offsetWidth;
+  listen.classList.add("extended");
+  if (!state.roundExtended) {
+    state.roundExtended = true;
+    const remaining = Math.max(0, state.roundDeadline - performance.now()) + 3000;
+    scheduleRoundExpiry(remaining);
+    showFeedback(`🔊 ${word} · +3 秒`, true);
+  } else showFeedback(`🔊 ${word}`, true);
 }
 
 function updateTarget() {
@@ -277,6 +349,8 @@ function updateTarget() {
   const isVoiced = state.target === "voiced";
   badge.className = `target-badge ${state.target}`;
   badge.textContent = isVoiced ? "VOICED /ð/" : "UNVOICED /θ/";
+  $("#speak-button").className = `speak-button ${state.target}`;
+  $("#speak-button").setAttribute("aria-label", isVoiced ? "Hear the voiced TH sound｜聆聽 voiced TH" : "Hear the unvoiced TH sound｜聆聽 unvoiced TH");
 }
 
 function hitHole(hole, event) {
@@ -294,7 +368,7 @@ function hitHole(hole, event) {
     playSfx("hit", 55);
     playSfx("correct", 135);
     showFeedback(`答對了！${word} · ${WORDS.find(item => item.word === word).ipa}`, true);
-    setTimeout(() => speak(word), 360);
+    setTimeout(() => playTeachingClip(wordAudio.get(word)), 360);
     if (state.score >= 10) {
       updateHud();
       setTimeout(() => endLevel(true), 620);
@@ -388,8 +462,7 @@ function speak(text) {
 }
 
 function speakPrompt() {
-  const text = state.target === "voiced" ? "Find the voiced th sound. Like this." : "Find the unvoiced th sound. Like think.";
-  speak(text);
+  playTeachingClip(state.target === "voiced" ? audio.promptVoiced : audio.promptUnvoiced);
 }
 
 function animateHammer(x, y) {
@@ -434,6 +507,7 @@ $("#mute-button").addEventListener("click", () => {
   $("#mute-button").setAttribute("aria-label", state.muted ? "開啟聲音" : "關閉聲音");
   if (state.muted) {
     Object.entries(audio).forEach(([name, sound]) => { if (name !== "music") sound.pause(); });
+    wordAudio.forEach(sound => sound.pause());
     if ("speechSynthesis" in window) window.speechSynthesis.cancel();
   }
 });

@@ -134,13 +134,18 @@ button:focus-visible { outline: 5px solid #fff; outline-offset: 3px; }
 .heart.lost { color: #c9bba9; opacity: .55; transform: scale(.8); filter: none; }
 .timer-chip span, .score-chip span { margin-right: 7px; }
 .score-chip span { color: #ffc54b; }
-.prompt-bar { position: absolute; z-index: 8; top: 11%; left: 50%; transform: translateX(-50%); width: min(680px, 82vw); min-height: 64px; border-radius: 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 13px 8px 20px; }
+.prompt-bar { position: absolute; z-index: 8; top: 11%; left: 50%; transform: translateX(-50%); width: min(790px, 88vw); min-height: 70px; border-radius: 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 13px 8px 20px; }
 .level-title { color: var(--purple); font-weight: 1000; margin-right: 8px; }
 .prompt-copy { font-weight: 800; }
 .target-badge { display: inline-block; padding: 7px 12px; border-radius: 13px; color: #fff; white-space: nowrap; }
 .target-badge.voiced { background: var(--purple); }
 .target-badge.unvoiced { background: var(--mint-dark); }
-.speak-button { min-height: 44px; color: #fff; background: var(--coral); border-radius: 16px; padding: 8px 13px; white-space: nowrap; }
+.speak-button { min-height: 52px; color: #fff; background: var(--mint-dark); border-radius: 16px; padding: 7px 14px; white-space: nowrap; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 8px; text-align: left; }
+.speak-button.voiced { background: var(--purple); }
+.speak-button > span:first-child { grid-row: 1 / span 2; font-size: 1.35rem; }
+.speak-button b, .speak-button small { display: block; }
+.speak-button small { margin-top: 1px; font-size: .74rem; opacity: .9; }
+.listen-tip { position: absolute; z-index: 8; top: 21%; left: 50%; transform: translateX(-50%); padding: 5px 14px; border: 3px solid rgba(255,255,255,.76); border-radius: 999px; background: rgba(255,247,220,.94); color: #604b36; font-size: clamp(.72rem, 1.2vw, .92rem); font-weight: 900; white-space: nowrap; box-shadow: 0 5px 12px rgba(73,47,30,.18); }
 
 .hole-grid {
   --grid: 3;
@@ -160,6 +165,9 @@ button:focus-visible { outline: 5px solid #fff; outline-offset: 3px; }
 .hole.retreating .hedgehog-wrap { transform: translate(-50%, 78%) scale(.8); opacity: .4; }
 .hedgehog-img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 8px 4px rgba(55,35,23,.28)); }
 .word-card { position: absolute; z-index: 4; left: 50%; bottom: 4%; transform: translateX(-50%); min-width: 64%; padding: clamp(4px, .6vw, 8px) clamp(8px, 1vw, 14px); border-radius: 13px; background: #fff6dc; border: clamp(2px, .25vw, 4px) solid #bd7e4e; box-shadow: 0 5px 0 rgba(93,57,34,.25); font-size: clamp(.7rem, 1.45vw, 1.35rem); font-weight: 1000; text-transform: uppercase; white-space: nowrap; }
+.word-audio { position: absolute; z-index: 6; right: 4%; top: 13%; display: grid; place-items: center; width: clamp(27px, 3.2vw, 39px); height: clamp(27px, 3.2vw, 39px); border: 3px solid #fff; border-radius: 50%; background: #4fa984; color: #fff; font-size: clamp(.7rem, 1.4vw, 1rem); box-shadow: 0 4px 8px rgba(48,64,41,.28); cursor: pointer; user-select: none; }
+.word-audio:focus-visible { outline: 4px solid #ffe16b; outline-offset: 2px; }
+.word-audio.extended { animation: listen-ring .8s ease-out; }
 .hole.hit .hedgehog-wrap { animation: bonk .38s ease; }
 .hole.correct .hedgehog-wrap { animation: celebrate .55s ease; }
 .hole.correct .word-card { background: #c9f2aa; border-color: #62a847; }
@@ -223,6 +231,7 @@ button:focus-visible { outline: 5px solid #fff; outline-offset: 3px; }
 @keyframes celebrate { 30% { transform: translate(-50%, -10%) rotate(-5deg) scale(1.05); } 65% { transform: translate(-50%, -8%) rotate(5deg) scale(1.05); } }
 @keyframes burst { 55% { opacity: 1; transform: translate(-50%, -30%) scale(1.3) rotate(8deg); } 100% { opacity: 0; transform: translate(-50%, -55%) scale(1.6); } }
 @keyframes hammer-swing { 45% { transform: translate(-30%, -55%) rotate(35deg); } }
+@keyframes listen-ring { 0% { box-shadow: 0 0 0 0 rgba(255,225,107,.95); } 100% { box-shadow: 0 0 0 18px rgba(255,225,107,0); } }
 
 @media (max-height: 670px) {
   .start-card { height: 96vh; }
@@ -230,6 +239,7 @@ button:focus-visible { outline: 5px solid #fff; outline-offset: 3px; }
   .mascot-stage img { height: 72%; }
   .sound-chip { bottom: -2px; padding: 5px 9px; }
   .prompt-bar { top: 10%; }
+  .listen-tip { top: 20.5%; }
   .hole-grid { top: 60%; height: 66vh; }
   .teacher-button { height: 42vh; }
 }
@@ -241,6 +251,10 @@ button:focus-visible { outline: 5px solid #fff; outline-offset: 3px; }
   .hearts { min-width: 122px; padding: 4px 7px; }
   .timer-chip, .score-chip { padding: 4px 8px; }
   .prompt-bar { top: 10.5%; min-height: 55px; }
+  .speak-button { min-height: 46px; padding: 6px 9px; }
+  .speak-button b { font-size: .8rem; }
+  .speak-button small { font-size: .66rem; }
+  .listen-tip { top: 20%; max-width: 84vw; overflow: hidden; text-overflow: ellipsis; }
   .hole-grid { width: 78vw; }
   .teacher-button { width: 25vw; }
   .music-toggle { min-height: 44px; padding: 7px 10px; }

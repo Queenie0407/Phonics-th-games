@@ -22,3 +22,8 @@ The following files were downloaded from [Sound Effect Lab](https://soundeffect-
 | `cheer.mp3` | 歓声と拍手 | [Crowd voices](https://soundeffect-lab.info/sound/voice/people.html) |
 
 These files are included only as part of the interactive game, not offered as a standalone audio collection.
+
+## English teaching clips
+
+- `words/*.mp3` — the 22 game words, generated for this game with the Microsoft Edge neural voice `en-US-JennyNeural` at a reduced speaking rate.
+- `prompts/voiced.mp3` and `prompts/unvoiced.mp3` — fixed target-sound prompts generated with the same neural voice.
