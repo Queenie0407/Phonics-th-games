@@ -164,7 +164,7 @@ button:focus-visible { outline: 5px solid #fff; outline-offset: 3px; }
 .hole.active .hedgehog-wrap { transform: translate(-50%, 2%) scale(1); opacity: 1; pointer-events: auto; }
 .hole.retreating .hedgehog-wrap { transform: translate(-50%, 78%) scale(.8); opacity: .4; }
 .hedgehog-img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 8px 4px rgba(55,35,23,.28)); }
-.word-card { position: absolute; z-index: 4; left: 50%; bottom: 4%; transform: translateX(-50%); min-width: 64%; padding: clamp(4px, .6vw, 8px) clamp(8px, 1vw, 14px); border-radius: 13px; background: #fff6dc; border: clamp(2px, .25vw, 4px) solid #bd7e4e; box-shadow: 0 5px 0 rgba(93,57,34,.25); font-size: clamp(.7rem, 1.45vw, 1.35rem); font-weight: 1000; text-transform: uppercase; white-space: nowrap; }
+.word-card { position: absolute; z-index: 4; left: 50%; bottom: 4%; transform: translateX(-50%); min-width: 64%; padding: clamp(4px, .6vw, 8px) clamp(8px, 1vw, 14px); border-radius: 13px; background: #fff6dc; border: clamp(2px, .25vw, 4px) solid #bd7e4e; box-shadow: 0 5px 0 rgba(93,57,34,.25); font-size: clamp(.7rem, 1.45vw, 1.35rem); font-weight: 1000; line-height: 1.15; text-align: center; text-transform: uppercase; white-space: nowrap; }
 .word-audio { position: absolute; z-index: 6; right: 4%; top: 13%; display: grid; place-items: center; width: clamp(27px, 3.2vw, 39px); height: clamp(27px, 3.2vw, 39px); border: 3px solid #fff; border-radius: 50%; background: #4fa984; color: #fff; font-size: clamp(.7rem, 1.4vw, 1rem); box-shadow: 0 4px 8px rgba(48,64,41,.28); cursor: pointer; user-select: none; }
 .word-audio:focus-visible { outline: 4px solid #ffe16b; outline-offset: 2px; }
 .word-audio.extended { animation: listen-ring .8s ease-out; }
