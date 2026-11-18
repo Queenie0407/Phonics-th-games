@@ -135,7 +135,7 @@ button:focus-visible { outline: 5px solid #fff; outline-offset: 3px; }
 .timer-chip span, .score-chip span { margin-right: 7px; }
 .score-chip span { color: #ffc54b; }
 .prompt-bar { position: absolute; z-index: 8; top: 11%; left: 50%; transform: translateX(-50%); width: min(790px, 88vw); min-height: 70px; border-radius: 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 13px 8px 20px; }
-.prompt-main { min-width: 0; display: grid; gap: 4px; align-content: center; }
+.prompt-main { min-width: 0; }
 .prompt-target { white-space: nowrap; }
 .level-title { color: var(--purple); font-weight: 1000; margin-right: 8px; }
 .prompt-copy { font-weight: 800; }
@@ -147,8 +147,6 @@ button:focus-visible { outline: 5px solid #fff; outline-offset: 3px; }
 .speak-button > span:first-child { grid-row: 1 / span 2; font-size: 1.35rem; }
 .speak-button b, .speak-button small { display: block; }
 .speak-button small { margin-top: 1px; font-size: .74rem; opacity: .9; }
-.listen-tip { color: #68543f; font-size: clamp(.67rem, 1vw, .82rem); font-weight: 900; line-height: 1.15; white-space: nowrap; }
-.listen-zh::before { content: "｜"; }
 
 .hole-grid {
   --grid: 3;
@@ -258,9 +256,6 @@ button:focus-visible { outline: 5px solid #fff; outline-offset: 3px; }
   .speak-button { min-height: 46px; padding: 6px 9px; }
   .speak-button b { font-size: .8rem; }
   .speak-button small { font-size: .66rem; }
-  .listen-tip { font-size: .66rem; }
-  .listen-en { display: none; }
-  .listen-zh::before { content: ""; }
   .hole-grid { width: 78vw; }
   .teacher-button { width: 25vw; }
   .music-toggle { min-height: 44px; padding: 7px 10px; }
